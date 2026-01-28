@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
-import { validateIdParam } from '../middleware/validateId.ts';
+import { validateIdParam, validateJsonBody } from '../middleware/validators.ts';
 
 const router = Router();
 
@@ -36,6 +36,7 @@ router.get(
 router.post(
   '/:id',
   validateIdParam,
+  validateJsonBody,
   (
     req: Request<{ id: string }, StoredRecord, RecordData>,
     res: Response<StoredRecord>
