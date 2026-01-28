@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/alam9316/rainbow-timetravel-ts#readme",
   "dependencies": {
+    "better-sqlite3": "^12.6.2",
     "dotenv": "^17.2.3",
     "express": "^5.2.1"
   },

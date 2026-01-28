@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { validateIdParam, validateJsonBody } from '../middleware/validators.ts';
+import db from '../utils/db.ts';
 
 const router = Router();
 
@@ -11,8 +12,6 @@ type StoredRecord = {
   data: RecordData;
 };
 
-const STORED_RECORDS = new Map<number, StoredRecord>();
-
 router.get(
   '/:id',
   validateIdParam,
@@ -21,14 +20,15 @@ router.get(
     res: Response<StoredRecord | { error: string }>
   ) => {
     const id = Number(req.params.id);
-    const record = STORED_RECORDS.get(id);
+    const row = db.prepare('SELECT * FROM records WHERE id = ?').get(id);
 
-    if (!record) {
+    if (!row) {
       return res
         .status(400)
         .json({ error: `record of id ${id} does not exist` });
     }
 
+    const record: StoredRecord = { id: row.id, data: JSON.parse(row.data) };
     res.json(record);
   }
 );
@@ -42,7 +42,8 @@ router.post(
     res: Response<StoredRecord>
   ) => {
     const id = Number(req.params.id);
-    const currentData = STORED_RECORDS.get(id)?.data || {};
+    const row = db.prepare('SELECT * FROM records WHERE id = ?').get(id);
+    const currentData: RecordData = row ? JSON.parse(row.data) : {};
     const newData: RecordData = { ...currentData };
 
     for (const key in req.body) {
@@ -54,7 +55,10 @@ router.post(
     }
 
     const record: StoredRecord = { id, data: newData };
-    STORED_RECORDS.set(id, record);
+
+    db.prepare(
+      'INSERT INTO records (id, data) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET data=excluded.data'
+    ).run(id, JSON.stringify(newData));
 
     res.status(201).json(record);
   }

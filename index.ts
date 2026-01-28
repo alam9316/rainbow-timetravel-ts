@@ -1,5 +1,5 @@
 import express from 'express';
-import envConfig from './envconfig.ts';
+import envConfig from './utils/envconfig.ts';
 import recordsRouter from './api/records.ts';
 
 const app = express();
