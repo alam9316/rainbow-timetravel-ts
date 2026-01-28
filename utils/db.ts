@@ -12,4 +12,16 @@ db.prepare(
 `
 ).run();
 
+db.prepare(
+  `
+  CREATE TABLE IF NOT EXISTS records_versioned (
+    id INTEGER,
+    data TEXT NOT NULL,
+    version INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (id, version)
+  )
+`
+).run();
+
 export default db;
