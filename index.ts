@@ -1,5 +1,6 @@
 import express from 'express';
 import envConfig from './envconfig.ts';
+import recordsRouter from './api/records.ts';
 
 const app = express();
 app.use(express.json());
@@ -10,6 +11,9 @@ const PORT = envConfig.processEnv.PORT;
 app.all('/api/v1/health', (_req, res) => {
   res.status(200).json({ status: 'ok' });
 });
+
+// Records routes
+app.use('/api/v1/records', recordsRouter);
 
 // Error handling middleware
 app.use(
