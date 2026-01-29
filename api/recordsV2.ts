@@ -20,7 +20,12 @@ type VersionedRecord = {
 };
 
 /**
- * Lastest record or optional record at a specific timestamp
+ * GET Latest record or record at a specific timestamp
+ *
+ * @route GET /:id
+ * @param {string} req.params.id - Record id (positive integer)
+ * @param {string} [req.query.timestamp] - ISO timestamp to get state at (defaults to now)
+ * @returns {VersionedRecord|{error: string}} 200 with versioned record or 404 if not found
  */
 router.get(
   '/:id',
@@ -67,6 +72,11 @@ router.get(
 
 /**
  * GET specific version of a record
+ *
+ * @route GET /:id/versions/:version
+ * @param {string} req.params.id - Record id (positive integer)
+ * @param {string} req.params.version - Version number (positive integer)
+ * @returns {VersionedRecord|{error: string}} 200 with the requested version or 404 if not found
  */
 router.get(
   '/:id/versions/:version',
@@ -117,6 +127,10 @@ router.get(
 
 /**
  * LIST all versions
+ *
+ * @route GET /:id/versions
+ * @param {string} req.params.id - Record id (positive integer)
+ * @returns {VersionedRecord[]} 200 array of versions (most recent first)
  */
 router.get(
   '/:id/versions',
@@ -160,6 +174,11 @@ router.get(
 
 /**
  * POST (always creates new version)
+ *
+ * @route POST /:id
+ * @param {string} req.params.id - Record id (positive integer)
+ * @body {RecordData} req.body - JSON object with fields to set (null to delete)
+ * @returns {VersionedRecord} 201 created versioned record
  */
 router.post(
   '/:id',
