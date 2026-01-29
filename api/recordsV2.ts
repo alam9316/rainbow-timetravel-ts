@@ -15,7 +15,8 @@ type VersionedRecord = {
   id: number;
   version: number;
   data: RecordData;
-  created_at: string;
+  created_at: string; // original record created (version 1)
+  updated_at: string; // timestamp for this returned version
 };
 
 /**
@@ -48,11 +49,18 @@ router.get(
       return res.status(404).json({ error: `record of id ${id} not found` });
     }
 
+    const first = db
+      .prepare(
+        `SELECT created_at FROM records_versioned WHERE id = ? ORDER BY version ASC LIMIT 1`
+      )
+      .get(id);
+
     res.json({
       id: row.id,
       version: row.version,
       data: JSON.parse(row.data),
-      created_at: row.created_at
+      created_at: first ? first.created_at : row.created_at,
+      updated_at: row.created_at
     });
   }
 );
@@ -91,11 +99,18 @@ router.get(
         .json({ error: `version ${version} for id ${id} not found` });
     }
 
+    const first = db
+      .prepare(
+        `SELECT created_at FROM records_versioned WHERE id = ? ORDER BY version ASC LIMIT 1`
+      )
+      .get(id);
+
     res.json({
       id: row.id,
       version: row.version,
       data: JSON.parse(row.data),
-      created_at: row.created_at
+      created_at: first ? first.created_at : row.created_at,
+      updated_at: row.created_at
     });
   }
 );
