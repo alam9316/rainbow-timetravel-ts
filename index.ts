@@ -1,6 +1,7 @@
 import express from 'express';
 import envConfig from './utils/envconfig.ts';
 import recordsRouter from './api/records.ts';
+import recordsRouterV2 from './api/recordsV2.ts';
 
 const app = express();
 app.use(express.json());
@@ -14,6 +15,7 @@ app.all('/api/v1/health', (_req, res) => {
 
 // Records routes
 app.use('/api/v1/records', recordsRouter);
+app.use('/api/v2/records', recordsRouterV2);
 
 // Error handling middleware
 app.use(
