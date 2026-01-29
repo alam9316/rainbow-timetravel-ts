@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
-import { validateIdParam, validateJsonBody } from '../middleware/validators.ts';
+import {
+  validateIdParam,
+  validateJsonBody,
+  validateVersionParam
+} from '../middleware/validators.ts';
 import db from '../utils/db.ts';
 
 const router = Router();
@@ -54,11 +58,12 @@ router.get(
 );
 
 /**
- *
+ * GET specific version of a record
  */
 router.get(
   '/:id/versions/:version',
   validateIdParam,
+  validateVersionParam,
   (
     req: Request<{ id: string; version: string }>,
     res: Response<VersionedRecord | { error: string }>
