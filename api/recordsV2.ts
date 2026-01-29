@@ -140,12 +140,19 @@ router.get(
       created_at: string;
     }[];
 
+    const first = db
+      .prepare(
+        `SELECT created_at FROM records_versioned WHERE id = ? ORDER BY version ASC LIMIT 1`
+      )
+      .get(id) as { created_at: string } | undefined;
+
     res.json(
       rows.map((row) => ({
         id: row.id,
         version: row.version,
         data: JSON.parse(row.data),
-        created_at: row.created_at
+        created_at: first ? first.created_at : row.created_at,
+        updated_at: row.created_at
       }))
     );
   }
@@ -197,11 +204,24 @@ router.post(
         `
       ).run(id, newVersion, JSON.stringify(newData));
 
+      const inserted = db
+        .prepare(
+          `SELECT created_at FROM records_versioned WHERE id = ? AND version = ? LIMIT 1`
+        )
+        .get(id, newVersion) as { created_at: string };
+
+      const first = db
+        .prepare(
+          `SELECT created_at FROM records_versioned WHERE id = ? ORDER BY version ASC LIMIT 1`
+        )
+        .get(id) as { created_at: string } | undefined;
+
       return {
         id,
         version: newVersion,
         data: newData,
-        created_at: new Date().toISOString()
+        created_at: first ? first.created_at : inserted.created_at,
+        updated_at: inserted.created_at
       };
     });
 
