@@ -38,6 +38,23 @@ router.get(
     const timestamp =
       (req.query.timestamp as string) || new Date().toISOString();
 
+    const first = db
+      .prepare(
+        `SELECT created_at FROM records_versioned WHERE id = ? ORDER BY version ASC LIMIT 1`
+      )
+      .get(id) as { created_at: string } | undefined;
+
+    if (!first) {
+      return res.status(404).json({ error: `record of id ${id} not found` });
+    }
+
+    // if requested timestamp is before the first version, return a clear error
+    if (new Date(timestamp) < new Date(first.created_at)) {
+      return res.status(400).json({
+        error: `no version for id ${id} at or before timestamp ${timestamp}; earliest version created_at = ${first.created_at}`
+      });
+    }
+
     const row = db
       .prepare(
         `
@@ -53,12 +70,6 @@ router.get(
     if (!row) {
       return res.status(404).json({ error: `record of id ${id} not found` });
     }
-
-    const first = db
-      .prepare(
-        `SELECT created_at FROM records_versioned WHERE id = ? ORDER BY version ASC LIMIT 1`
-      )
-      .get(id);
 
     res.json({
       id: row.id,
